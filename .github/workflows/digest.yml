@@ -24,4 +24,5 @@ jobs:
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python main.py

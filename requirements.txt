@@ -1,2 +1,4 @@
 feedparser
 resend
+google-genai
+requests
