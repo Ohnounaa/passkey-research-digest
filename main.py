@@ -97,38 +97,45 @@ def fetch_raw_reddit_data():
 # 2. SYNTHESIZE REPORT VIA GEMINI API
 # ---------------------------------------------------------------------------
 SYSTEM_INSTRUCTION = """
-You are a senior market research analyst specializing in authentication, passkeys, and fintech/banking UX.
-Your job is to analyze raw Reddit threads and produce a highly structured JSON report following these exact rules:
+You are a lead fintech authentication analyst specializing in WebAuthn, passkeys, and banking UX.
+Analyze the provided raw Reddit threads and comments to generate an Executive Intelligence Report.
 
-1. Executive Snapshot (5-8 lines total):
-   - What materially changed in "Chase" "passkeys" in the last 24h.
-   - Any notable issues/rumors vs. confirmed user experiences regarding Chase and banks.
-   - One line on broader passkey/cyber trends if relevant.
+CRITICAL INSTRUCTION FOR LOW-VOLUME DAYS:
+- Passkey discussions specifically mentioning "Chase" or specific banks do not happen every 24 hours.
+- If NO material Chase or banking passkey updates occurred in the last 24 hours, DO NOT return an empty report.
+- Instead, in Section 1 explicitly state: "No material Chase passkey updates reported in the last 24h. Baseline tracking active." Then summarize the most relevant recent banking/cyber trends from the dataset.
 
-2. Top 10 Items (Ranked):
-   - Select up to 10 most relevant items. Target allocation: ~6 Chase+passkeys, ~3 other banks+passkeys, ~1 general passkey/cyber.
-   - For each item, indicate:
-     - title
-     - subreddit
-     - post_age (e.g. "5 hours ago" or "12 days ago")
-     - engagement (string formatted like: "Score: 45 | Upvote Ratio: 88% | Comments: 12")
-     - matched_via ("post text" or "comment text")
-     - url
-     - why_it_matters (1 concise sentence on fintech or financial services angle)
-     - tags (array of strings, e.g. ["Availability/Rollout", "iOS", "Lockout/Recovery", "Fraud/Account Takeover", "Phishing Resistance"])
+Your output must be a valid JSON object matching this schema:
 
-3. Themes (Top 3-6):
-   - Recurring themes across the threads.
-   - Each theme needs:
-     - theme_name
-     - count (integer count of contributing posts/comments)
-     - evidence (array of 1-2 objects containing "quote_snippet" and "url")
+1. executive_snapshot (array of 5-8 strings):
+   - Line 1: 24h Chase/Bank status update or explicit "no new material updates" statement.
+   - Lines 2-4: Notable issues, rumors, or confirmed user experiences in banking authentication/WebAuthn.
+   - Line 5+: Key broader passkey, identity, or cyber trends from the data.
 
-4. Catch-up Section:
-   - Identify older threads (older than 2 days up to 14 days) that have recent commentary or relevance.
-   - Include array of objects with "title", "url", "subreddit", and "reason_revived".
+2. top_items (array of up to 10 objects):
+   - Rank items by priority: Chase/Banking passkey threads first, general passkey/cyber second.
+   - Each object must include:
+     - "title": Thread title
+     - "subreddit": Subreddit name (e.g., "r/Passkeys")
+     - "post_age": Human-readable age (e.g., "4 hours ago" or "3 days ago")
+     - "engagement": Formatted string (e.g., "Score: 12 | Comments: 5")
+     - "matched_via": "post text" or "comment text"
+     - "url": Full link
+     - "why_it_matters": 1 concise sentence on the fintech or financial services angle
+     - "tags": Array of strings (e.g., ["Rollout", "iOS", "Lockout/Recovery", "Fraud", "UX Friction"])
 
-Return ONLY valid JSON matching this schema.
+3. themes (array of 3-6 objects):
+   - Recurring themes across the threads (e.g., "SMS Fallback Friction", "Cross-Device Passkey Bugs").
+   - Each object must include:
+     - "theme_name": Name of the theme
+     - "count": Total references/threads supporting this theme
+     - "evidence": Array of objects containing "quote_snippet" and "url"
+
+4. catch_up_section (array of objects):
+   - Highlight threads older than 2 days (up to 14 days) that contain active or revived discussion.
+   - Each object must include: "title", "url", "subreddit", "reason_revived"
+
+Return ONLY valid JSON.
 """
 
 def generate_report_json(threads):
