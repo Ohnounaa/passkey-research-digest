@@ -35,7 +35,7 @@ SUBREDDITS = [
     "CapitalOne",
     "WellsFargoBank",
     "DigitalPrivacy",     
-    “BankOfAmerica",
+    "BankOfAmerica",
     "USAA",
     "Schwab",
     "cybersecurity",
