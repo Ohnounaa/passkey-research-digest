@@ -46,32 +46,37 @@ def fetch_raw_reddit_rss():
     raw_threads = []
     seen_urls = set()
 
+    # Search globally across Reddit (8 requests total instead of 120)
     for query in SEARCH_QUERIES:
-        # Encode spaces into URL-safe strings (e.g. "Chase%20passkey")
         encoded_query = urllib.parse.quote(query)
+        rss_url = f"https://www.reddit.com/search.rss?q={encoded_query}&sort=new&t=month"
+        
+        feed = feedparser.parse(
+            rss_url,
+            request_headers={"User-Agent": "PasskeyExecutiveDigest/2.0"}
+        )
 
-        for sub in SUBREDDITS:
-            rss_url = f"https://www.reddit.com/r/{sub}/search.rss?q={encoded_query}&sort=new&t=month&restrict_sr=on"
-            
-            # Pass a custom User-Agent to avoid generic request blocks
-            feed = feedparser.parse(
-                rss_url,
-                request_headers={"User-Agent": "PasskeyExecutiveDigest/2.0"}
-            )
+        for entry in feed.entries:
+            link = entry.get("link", "")
+            if link in seen_urls:
+                continue
+            seen_urls.add(link)
 
-            for entry in feed.entries:
-                link = entry.get("link", "")
-                if link in seen_urls:
-                    continue
-                seen_urls.add(link)
+            # Extract subreddit from the entry URL if available
+            sub_name = "Reddit"
+            if "/r/" in link:
+                try:
+                    sub_name = link.split("/r/")[1].split("/")[0]
+                except Exception:
+                    pass
 
-                raw_threads.append({
-                    "title": entry.get("title", ""),
-                    "subreddit": sub,
-                    "url": link,
-                    "published": entry.get("published", "Recent"),
-                    "summary": entry.get("summary", "")[:400],
-                })
+            raw_threads.append({
+                "title": entry.get("title", ""),
+                "subreddit": sub_name,
+                "url": link,
+                "published": entry.get("published", "Recent"),
+                "summary": entry.get("summary", "")[:400],
+            })
 
     return raw_threads
 
