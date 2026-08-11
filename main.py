@@ -1,12 +1,13 @@
 import json
 import os
+import urllib.parse
 import feedparser
 import resend
 from google import genai
 from google.genai import types
 
 # ---------------------------------------------------------------------------
-# 1. FETCH REDDIT DATA VIA PUBLIC RSS (BYPASSES DATACENTER 403 BLOCKS)
+# 1. FETCH REDDIT DATA VIA PUBLIC RSS (WITH URL-ENCODED QUERIES)
 # ---------------------------------------------------------------------------
 SEARCH_QUERIES = [
     "Chase passkey",
@@ -34,6 +35,9 @@ SUBREDDITS = [
     "Chase",
     "CapitalOne",
     "WellsFargoBank",
+    "BankOfAmerica",
+    "USAA",
+    "Schwab",
     "DigitalPrivacy",
 ]
 
@@ -42,11 +46,18 @@ def fetch_raw_reddit_rss():
     raw_threads = []
     seen_urls = set()
 
-    # Search subreddits via RSS feeds
     for query in SEARCH_QUERIES:
+        # Encode spaces into URL-safe strings (e.g. "Chase%20passkey")
+        encoded_query = urllib.parse.quote(query)
+
         for sub in SUBREDDITS:
-            rss_url = f"https://www.reddit.com/r/{sub}/search.rss?q={query}&sort=new&t=month&restrict_sr=on"
-            feed = feedparser.parse(rss_url)
+            rss_url = f"https://www.reddit.com/r/{sub}/search.rss?q={encoded_query}&sort=new&t=month&restrict_sr=on"
+            
+            # Pass a custom User-Agent to avoid generic request blocks
+            feed = feedparser.parse(
+                rss_url,
+                request_headers={"User-Agent": "PasskeyExecutiveDigest/2.0"}
+            )
 
             for entry in feed.entries:
                 link = entry.get("link", "")
@@ -114,7 +125,7 @@ Return ONLY valid JSON.
 def generate_report_json(threads):
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-    # Fallback sample content if RSS search yielded zero matches
+    # Fallback context if RSS search yields zero threads
     if not threads:
         threads = [{
             "title": "Passkey adoption updates in retail banking",
