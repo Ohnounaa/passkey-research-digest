@@ -34,7 +34,7 @@ SUBREDDITS = [
     "Chase",
     "CapitalOne",
     "WellsFargoBank",
-    "DigitalPrivacy",     
+    "DigitalPrivacy",
     "BankOfAmerica",
     "USAA",
     "Schwab",
