@@ -36,9 +36,9 @@ SUBREDDITS = [
     "WellsFargoBank",
     "DigitalPrivacy",     
     “BankOfAmerica",
-    “USAA",
-    “Schwab”,
-    “cybersecurity”,
+    "USAA",
+    "Schwab",
+    "cybersecurity",
 ]
 
 HEADERS = {"User-Agent": "PasskeyExecutiveDigest/2.0"}
